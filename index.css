@@ -1,0 +1,22 @@
+.shortLink_dev {
+    cursor: pointer;
+}
+.name_dev {
+	cursor: pointer;
+    background: lightgray;
+    font-size: 14px;
+    font-weight: 600;
+}
+.boards_ul_parent li{
+	display: block;
+	cursor: pointer;
+}
+
+#moh_boards{
+	margin-top: 20px;
+}
+
+.boards_ul_container{
+	max-height: 26px; width: 300px; overflow: hidden;
+
+}

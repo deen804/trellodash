@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
+    <style type="text/css">
+    .shortLink_dev {
+        cursor: pointer;
+    }
+    </style>
+</head>
+
+<body>
+    <!-- <button class="fetch_ubuntu_recent">Fetch ubuntu recent</button>
+    <button class="fetch_my_all_actions">fetch_my_all_actions</button> -->
+    <table class="table table_group" id="table">
+    </table>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.17.2/lodash.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
+<script type="text/javascript">
+const KEY_AND_TOKEN = 'key=174bf62d3dbd794527d4e6e60d643980&token=42a90ee537de2f9e6962c8b09dc4c60e48a056a0d37385d2c523ba9a26769cd1';
+const TRELLO_UBUNTU_RECENT_URL = 'https://api.trello.com/1/boards/tSTxbKha/actions?filter=createCard&fields=data&limit=5&' + KEY_AND_TOKEN;
+const TRELLO_MY_ACTIONS_URL = 'https://api.trello.com/1/members/me/actions?filter=createCard,updateCard&limit=20&' + KEY_AND_TOKEN;
+const TRELLO_GET_ATTACHMENTS_LINK_BEGIN = 'https://api.trello.com/1/cards/';
+const TRELLO_GET_ATTACHMENTS_LINK_END = '/attachments?' + KEY_AND_TOKEN;
+
+var AJAX = {
+
+    post: function(u, d, dt, cb) {
+        dt = typeof dt !== 'undefined' ? dt : 'json';
+        return $.ajax({
+            url: u,
+            data: d,
+            type: 'POST',
+            dataType: dt
+        });
+    },
+
+    get: function(u, d, dt, cb) {
+        dt = typeof dt !== 'undefined' ? dt : 'json';
+        return $.ajax({
+            url: u,
+            data: d,
+            type: 'GET',
+            dataType: dt
+        });
+    },
+};
+
+// usage
+var getData = function(url) {
+    $.when(AJAX.get(url))
+        .then(function(response) {
+            console.log(response);
+            generate_bootstrap_table('#table', response);
+        });
+};
+
+var postData = function(url) {
+    var data = {};
+    $.when(AJAX.post(url, data))
+        .then(function(response) {
+            console.log(response);
+            generate_bootstrap_table('#table', response);
+        });
+};
+
+function appendExtraFields(colObj) {
+    var userDefinedCols = [
+        'list', 'board', 'date'
+    ];
+    _.each(userDefinedCols, function(vv, kk) {
+        var cur = {
+            field: vv,
+            title: vv,
+            class: vv + '_dev',
+            sortable: true,
+        };
+        colObj.push(cur);
+    });
+
+    return colObj;
+}
+
+function filterNeededColFields(colObj) {
+    var userDefinedColsArr = [
+        'shortLink',
+        'name',
+        'list',
+        'board',
+        'date'
+    ];
+
+    colObj = _.filter(colObj, function(child) {
+        return _.find(userDefinedColsArr, function(o, bbb) {
+            return child.field == o;
+        });
+    });
+
+    return colObj;
+}
+
+function filterNeededRowFields(rowObj) {
+    var userDefinedColsArr = [
+        'shortLink',
+        'name',
+        'list',
+        'board',
+        'date'
+    ];
+
+    var someObj = {};
+    _.map(rowObj, function(child, childKey) {
+        var result = _.find(userDefinedColsArr, function(vvv) {
+            return vvv == childKey;
+        });
+        if (result) {
+            someObj[childKey] = child;
+            return rowObj;
+        }
+    });
+
+    return someObj;
+}
+
+function generate_bootstrap_table(tableClassName, data) {
+    var colObj = [];
+
+    console.log(data);
+
+    jQuery.each(data[0]['data']['card'], function(k, v) {
+        var cur = {
+            field: k,
+            title: k,
+            class: k + '_dev',
+            sortable: true,
+        };
+        colObj.push(cur);
+
+        return;
+    });
+
+    colObj = appendExtraFields(colObj);
+    colObj = filterNeededColFields(colObj);
+
+    console.log('colObj', colObj);
+
+    var valObj = [];
+
+    _.each(data, function(value, key) {
+        if (!_.isUndefined(value.data.card)) {
+            var neededData = value.data.card;
+            neededData = filterNeededRowFields(neededData);
+
+            if (!_.isUndefined(neededData.shortLink)) {
+                neededData.shortLink = neededData.shortLink;
+            }
+
+            if (!_.isUndefined(value.data.list) && !_.isUndefined(value.data.list.name)) {
+                neededData.list = value.data.list.name;
+            }
+            if (!_.isUndefined(value.data.board) && !_.isUndefined(value.data.board.name)) {
+                neededData.board = value.data.board.name;
+            }
+            if (!_.isUndefined(value.date) && !_.isUndefined(value.date)) {
+                neededData.date = value.date;
+            }
+
+            valObj.push(neededData);
+        }
+    });
+
+    console.log('valObj', valObj);
+
+    $('#table').bootstrapTable('destroy').bootstrapTable({
+        data: valObj,
+        columns: colObj,
+        search: true,
+        pagination: true,
+    });
+}
+
+jQuery(document).ready(function($) {
+
+    getData(TRELLO_MY_ACTIONS_URL);
+
+    $(document).on('click', '.fetch_ubuntu_recent', function(e) {
+        getData(TRELLO_UBUNTU_RECENT_URL);
+    });
+
+    $(document).on('click', '.fetch_my_all_actions', function(e) {
+        getData(TRELLO_MY_ACTIONS_URL);
+    });
+
+    //actions
+    jQuery(document).on('click', '.shortLink_dev', function(e) {
+
+        var cardAttachmentUrl = TRELLO_GET_ATTACHMENTS_LINK_BEGIN + jQuery(this).text() + TRELLO_GET_ATTACHMENTS_LINK_END;
+
+        $.when(AJAX.get(cardAttachmentUrl))
+            .then(function(response) {
+                console.log(response);
+                if(_.isUndefined(response[0].url)){
+                    return;
+                }
+                var win = window.open(response[0].url, '_blank');
+                win.focus();
+            });
+    });
+
+});
+</script>
+
+</html>
