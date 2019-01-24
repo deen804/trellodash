@@ -1,7 +1,3 @@
-<?php
-
-?>
-
 <!DOCTYPE html>
 <html>
 
@@ -17,9 +13,13 @@
     <meta name="viewport" content="width=380">
     <div data-popbox-id="mypopbox1" class="popbox">
        <div class="popbox_container">
-        <div>
-            <input type="text" name="trello_key_moh" class="trello_key_moh">
-            <input type="text" name="trello_token_moh" class="trello_token_moh">
+        <div style="margin-bottom: 20px;">
+            <div>
+                Go to <a href="https://trello.com/app-key" _target="blank">https://trello.com/app-key</a> and get the key.
+                Click on the Token link on the same page and click authorize to get the token.
+            </div>
+            <input style="margin-bottom: 5px; width: 270px;" type="text" name="trello_key_moh" placeholder="Enter the key" class="trello_key_moh">
+            <input style="width: 500px;" type="text" name="trello_token_moh" placeholder="Enter the token" class="trello_token_moh">
         </div>
         <button class="save_keys_form_moh">Save</button>
         <button data-popbox-close="mypopbox1">Close</button>
@@ -77,6 +77,11 @@ function saveKeysFromLocalStorageMoh(){
     localforage.getItem('moh_trello_keys', function(err, value) {
 
         value = JSON.parse(value);
+
+        if(!value || !value.trello_key_moh){
+
+            return false;
+        }
 
         trello_key_moh = value.trello_key_moh;
         trello_token_moh = value.trello_token_moh;

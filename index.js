@@ -136,6 +136,13 @@ jQuery(document).ready(function($) {
     saveKeysFromLocalStorageMoh();
 
     setTimeout(function(){
+        if(!trello_key_moh){
+            popbox.open('mypopbox1');
+        }
+
+        $('.trello_key_moh').val(trello_key_moh);
+        $('.trello_token_moh').val(trello_token_moh);
+
         getData(TRELLO_MY_ACTIONS_URL);
         getDataSimple(TRELLO_MY_BOARDS_URL);
     }, 2000);
@@ -149,6 +156,10 @@ jQuery(document).ready(function($) {
             trello_key_moh: jQuery('.trello_key_moh').val(),
             trello_token_moh: jQuery('.trello_token_moh').val()
         }));
+
+        setTimeout(function(){
+            location.reload()
+        }, 2000)
     });
 
     $(document).on('click', '.fetch_this_board_recent', function(e) {
