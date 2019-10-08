@@ -37,19 +37,28 @@ var getDataSimple = function(url) {
 function fill_select_bars(someObj){
     var someInnerHtml = '';
 
-    someInnerHtml += '<li class="" board_id=""><button class="board_names">Enter Board name</button></li>';
+    someInnerHtml += '<option class="" value="" board_id=""><button class="board_names">Choose a board</button></option>';
 
     $.each(someObj, function(k, v){
-        someInnerHtml += '<li class="fetch_this_board_recent" board_id="' + v.id + '"><button class="board_names"> ' + v.name + ' </button></li>';
+        someInnerHtml += '<option class="fetch_this_board_recent" value="' + v.id + '" board_id="' + v.id + '">' + v.name + '</option>';
     });
 
     $('.boards_ul_parent').html(someInnerHtml);
 
-    var options = {
-      valueNames: [ 'board_names' ]
-    };
+    // var options = {
+    //   valueNames: [ 'board_names' ]
+    // };
 
-    var userList = new List('moh_boards', options);
+    // var userList = new List('moh_boards', options);
+
+    $('.boards_ul_parent').chosen().change(function(){
+        var boardId = jQuery('.boards_ul_parent').val();
+        var my_recent_url = 'https://api.trello.com/1/boards/' + boardId + '/actions?filter=createCard&fields=data&limit=100&' + KEY_AND_TOKEN;
+
+        console.log(boardId);
+
+        getData(my_recent_url);
+    });
 }
 
 // var postData = function(url) {
